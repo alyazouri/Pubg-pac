@@ -10,7 +10,7 @@ function FindProxyForURL(url, host) {
     dnsDomainIs(host, "cdnf.gcloudcs.com") ||
     dnsDomainIs(host, "midasoversea.qq.com")
   ) {
-    return "PROXY 176.57.25.143:8080";
+    return "PROXY 176.29.161.121:8080";
   }
   return "DIRECT";
 }
