@@ -1,7 +1,6 @@
 function isJordanIP(ip) {
   return (
-    shExpMatch(ip, "176.29.*.*") ||    // زين الأردن
-    shExpMatch(ip, "188.247.*.*") ||   // أمنية
+    shExpMatch(ip, "192.168.*.*")
   );
 }
 
