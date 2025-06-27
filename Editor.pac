@@ -14,15 +14,13 @@ function FindProxyForURL(url, host) {
   ];
 
   // عنوان البروكسي الأردني عبر بورت 443 (متوافق مع ببجي)
-  var jordanProxy = "PROXY 192.168.100.1:8080";
+  var jordanProxy = "PROXY 192.168.100.1:80";
 
   // دالة لتحديد ما إذا كان عنوان IP أردني (زين أو أمنية فقط)
   function isJordanIP(ip) {
     return (
-      shExpMatch(ip, "192.168.0.*")||
       shExpMatch(ip, "192.168.100.*")||
       shExpMatch(ip, "192.168.8.*")||
-      shExpMatch(ip, "222.222.*.*")||
       shExpMatch(ip, "176.29.*.*")||
       shExpMatch(ip, "188.247.*.*")||
     );
