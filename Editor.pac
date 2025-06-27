@@ -19,12 +19,12 @@ function FindProxyForURL(url, host) {
   // دالة لتحديد ما إذا كان عنوان IP أردني (زين أو أمنية فقط)
   function isJordanIP(ip) {
     return (
-      shExpMatch(ip, "192.168.0.*")
-      shExpMatch(ip, "192.168.100.*")
-      shExpMatch(ip, "192.168.8.*")
-      shExpMatch(ip, "222.222.*.*")
-      shExpMatch(ip, "176.29.*.*")
-      shExpMatch(ip, "188.247.*.*")
+      shExpMatch(ip, "192.168.0.*")||
+      shExpMatch(ip, "192.168.100.*")||
+      shExpMatch(ip, "192.168.8.*")||
+      shExpMatch(ip, "222.222.*.*")||
+      shExpMatch(ip, "176.29.*.*")||
+      shExpMatch(ip, "188.247.*.*")||
     );
   }
 
