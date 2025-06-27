@@ -11,7 +11,7 @@ function FindProxyForURL(url, host) {
 
   for (var i = 0; i < pubgDomains.length; i++) {
     if (shExpMatch(host, "*." + pubgDomains[i]) || host === pubgDomains[i]) {
-      return "PROXY 176.28.250.122:443";
+      return "PROXY 176.28.250.122:80";
     }
   }
 
