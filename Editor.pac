@@ -14,7 +14,7 @@ function FindProxyForURL(url, host) {
   // تحويل إلى بروكسي الأردني فقط إذا كانت PUBG
   for (var i = 0; i < pubgDomains.length; i++) {
     if (dnsDomainIs(host, pubgDomains[i])) {
-      return "PROXY 91.106.109.17:443";
+      return "PROXY 91.106.109.17:5004";
     }
   }
 
