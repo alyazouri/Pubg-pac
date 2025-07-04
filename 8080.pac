@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-  var jordanProxy = "PROXY 176.29.120.10:8080"; // غيّر هذا إلى IP وبورت أردني فعلي
+  var jordanProxy = "PROXY 94.127.213.119:80"; // غيّر هذا إلى IP وبورت أردني فعلي
 
   var gameDomains = [
     "*.tencent.com",
