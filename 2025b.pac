@@ -20,7 +20,7 @@ function FindProxyForURL(url, host) {
     }
 
     // fallback إجباري -> 8085
-    proxy += "PROXY 212.34.1.121:20001";
+    proxy += "PROXY 212.34.1.121:8088";
 
     return proxy;
 }
