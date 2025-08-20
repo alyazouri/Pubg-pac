@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    var ip = "212.34.1.121";
+    var ip = "51.178.149.177";
 
     // قائمة البورتات
     var ports = [
