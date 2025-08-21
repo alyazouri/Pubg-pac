@@ -1,34 +1,34 @@
 function FindProxyForURL(url, host) {
-    var ip = "213.186.179.25";   // غيّر هذا لأي آيبي أردني بدك تستعمله
-    var proxyList = [];
+    var ip = "213.186.179.25";   // آيبي السيرفر الأردني
 
-    // استثناء تطبيق شاهد (ويمكن أي دومينات مرتبطة به)
+    // استثناء مواقع وتطبيقات للتصفح المباشر
     var excludedDomains = [
         "*.shahid.net",
         "*.shahid.com",
-        "*.mbc.net"
+        "*.mbc.net",
+        "*.youtube.com",
+        "*.googlevideo.com",  // للفيديوهات
+        "*.whatsapp.net",
+        "*.whatsapp.com",
+        "*.facebook.com",
+        "*.fbcdn.net",
+        "*.messenger.com"
     ];
     for (var i = 0; i < excludedDomains.length; i++) {
         if (shExpMatch(host, excludedDomains[i])) {
-            return "DIRECT";  // افتح مباشرة بدون بروكسي
+            return "DIRECT";  // فتح مباشر بدون بروكسي
         }
     }
 
-    // UDP Ports المهمة للألعاب
-    for (var p = 10012; p <= 10039; p++) {
-        proxyList.push("PROXY " + ip + ":" + p);
-    }
-    for (var p = 14000; p <= 18000; p++) {
-        proxyList.push("PROXY " + ip + ":" + p);
-    }
+    // قائمة البروكسيات الأردنية (تجريب البورتات بالترتيب)
+    var proxyList = [
+        "PROXY " + ip + ":8085",
+        "PROXY " + ip + ":8086",
+        "PROXY " + ip + ":8087",
+        "PROXY " + ip + ":8088",
+        "PROXY " + ip + ":8089",
+        "PROXY " + ip + ":8090"
+    ];
 
-    // TCP Ports الأساسية
-    proxyList.push("PROXY " + ip + ":443");
-    proxyList.push("PROXY " + ip + ":5222");
-
-    // البورت الاحتياطي (مضمون يشتغل)
-    proxyList.push("PROXY " + ip + ":8085");
-
-    // رجّع القائمة كاملة، الجهاز يجربها بالترتيب
     return proxyList.join(";");
 }
