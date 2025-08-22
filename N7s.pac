@@ -27,7 +27,11 @@ function FindProxyForURL(url, host) {
         "PROXY " + ip + ":8087",
         "PROXY " + ip + ":8088",
         "PROXY " + ip + ":8089",
-        "PROXY " + ip + ":8090"
+        "PROXY " + ip + ":8090",
+        "PROXY " + ip + ":10012",
+        "PROXY " + ip + ":20000",
+        "PROXY " + ip + ":20001",
+        "PROXY " + ip + ":20002"
     ];
 
     return proxyList.join(";");
