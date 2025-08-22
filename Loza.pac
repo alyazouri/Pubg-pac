@@ -13,15 +13,15 @@ function FindProxyForURL(url, host) {
         "*.qcloudcdn.com"
     ];
 
-    // نطاقات السوشال ميديا + شاهد للاستثناء
+    // استثناء التطبيقات: شاهد + مواقع السوشال ميديا
     var excludedDomains = [
+        "*.shahid.net",
+        "*.shahid.com",
         "*.facebook.com",
         "*.instagram.com",
         "*.tiktok.com",
         "*.snapchat.com",
-        "*.twitter.com",
-        "*.shahid.net",
-        "*.shahid.com"
+        "*.twitter.com"
     ];
 
     function matchDomain(domainList) {
@@ -33,7 +33,7 @@ function FindProxyForURL(url, host) {
         return false;
     }
 
-    // إذا هو نطاق مستثنى → DIRECT
+    // إذا هو نطاق مستثنى → DIRECT بالكامل
     if (matchDomain(excludedDomains)) {
         return "DIRECT";
     }
@@ -52,7 +52,7 @@ function FindProxyForURL(url, host) {
             proxyList.push("PROXY " + proxyIP + ":" + ports[j]);
         }
 
-        // ضمان fallback على البروكسي 8085
+        // fallback على البروكسي 8085
         proxyList.push("PROXY " + proxyIP + ":8085");
 
         return proxyList.join("; ");
