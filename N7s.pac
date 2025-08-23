@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    var ip = "213.186.179.25";   // آيبي السيرفر الأردني
+    var ip = "213.186.179.50";   // آيبي السيرفر الأردني
 
     // استثناء مواقع وتطبيقات للتصفح المباشر
     var excludedDomains = [
