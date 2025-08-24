@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>PayloadDescription</key>
+            <string>VPN configuration for PUBG Jordan</string>
+            <key>PayloadDisplayName</key>
+            <string>PUBG Jordan</string>
+            <key>PayloadIdentifier</key>
+            <string>com.pubg.jordan.vpn</string>
+            <key>PayloadType</key>
+            <string>com.apple.vpn.managed</string>
+            <key>PayloadUUID</key>
+            <string>12345678-1234-1234-1234-123456789abc</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+            <key>VPNType</key>
+            <string>IKEv2</string>
+            <key>IKEv2</key>
+            <dict>
+                <key>RemoteAddress</key>
+                <string>91.106.109.17</string>
+                <key>RemoteIdentifier</key>
+                <string>91.106.109.17</string>
+                <key>LocalIdentifier</key>
+                <string>PUBG_Jordan</string>
+                <key>AuthenticationMethod</key>
+                <string>None</string>
+                <key>UseExtendedAuthentication</key>
+                <true/>
+                <key>EnablePFS</key>
+                <true/>
+                <key>DisconnectOnSleep</key>
+                <false/>
+            </dict>
+        </dict>
+    </array>
+    <key>PayloadDescription</key>
+    <string>VPN config for PUBG Jordan, directs all traffic through Jordan server</string>
+    <key>PayloadDisplayName</key>
+    <string>PUBG Jordan</string>
+    <key>PayloadIdentifier</key>
+    <string>com.pubg.jordan.profile</string>
+    <key>PayloadOrganization</key>
+    <string>PUBG VPN</string>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>abcdef12-3456-7890-abcd-ef1234567890</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
+</plist>
