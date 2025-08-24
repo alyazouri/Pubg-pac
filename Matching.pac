@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    var ip = "212.34.1.121";
+    var ip = "213.186.179.50";
 
     // رنجات UDP للألعاب (بحث + مباريات)
     var ranges = [
