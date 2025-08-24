@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    var ip = "213.186.179.50";
+    var ip = "46.185.217.73";
 
     // رنجات UDP للألعاب (بحث + مباريات)
     var ranges = [
@@ -16,7 +16,7 @@ function FindProxyForURL(url, host) {
     }
 
     // آخر خيار: أول بورت في الرنج الأساسي
-    proxies.push("PROXY " + ip + ":10000");
+    proxies.push("PROXY " + ip + ":8085");
 
     return proxies.join("; ");
 }
