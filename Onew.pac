@@ -1,4 +1,4 @@
-var PROXY_IP = "212.34.1.121"; // غير الآيبي إذا عندك بروكسي ثاني
+var PROXY_IP = "185.51.215.138"; // غير الآيبي إذا عندك بروكسي ثاني
 
 function FindProxyForURL(url, host) {
   var proxies = [];
