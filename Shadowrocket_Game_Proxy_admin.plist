@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Proxy</key>
+    <array>
+        <dict>
+            <key>enabled</key>
+            <true/>
+            <key>name</key>
+            <string>Jordan Game Proxy</string>
+            <key>type</key>
+            <string>SOCKS5</string>
+            <key>server</key>
+            <string>62.72.166.233</string>
+            <key>port</key>
+            <integer>8080</integer>
+            <key>username</key>
+            <string>admin</string>
+            <key>password</key>
+            <string>admin</string>
+        </dict>
+    </array>
+    <key>Rule</key>
+    <array>
+        <dict>
+            <key>type</key>
+            <string>Port</string>
+            <key>port</key>
+            <string>10012-10039</string>
+            <key>action</key>
+            <string>Proxy</string>
+        </dict>
+        <dict>
+            <key>type</key>
+            <string>Port</string>
+            <key>port</key>
+            <string>14000-18000</string>
+            <key>action</key>
+            <string>Proxy</string>
+        </dict>
+        <dict>
+            <key>type</key>
+            <string>Port</string>
+            <key>port</key>
+            <string>20000-20002</string>
+            <key>action</key>
+            <string>Proxy</string>
+        </dict>
+    </array>
+</dict>
+</plist>
