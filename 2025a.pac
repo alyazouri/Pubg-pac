@@ -1,26 +1,29 @@
+// PAC Script - Hybrid (SOCKS5 + HTTP Proxy)
+// Proxy IP: 213.186.179.25
+// Ports:
+//   • 10012 → 10039
+//   • 20000 → 20002
+//   • Fallback → 8085
+
 function FindProxyForURL(url, host) {
-    var proxy = "";
+    var proxyList = "";
 
-    // بورتات محددة فردية
-    proxy += "PROXY 213.186.179.25:8085; ";
-    proxy += "PROXY 213.186.179.25:8086; ";
-    proxy += "PROXY 213.186.179.25:8087; ";
-    proxy += "PROXY 213.186.179.25:8088; ";
-    proxy += "PROXY 213.186.179.25:10010; ";
-    proxy += "PROXY 213.186.179.25:10011; ";
-    proxy += "PROXY 213.186.179.25:10012; ";
-    proxy += "PROXY 213.186.179.25:10013; ";
-    proxy += "PROXY 213.186.179.25:20000; ";
-    proxy += "PROXY 213.186.179.25:20001; ";
-    proxy += "PROXY 213.186.179.25:20002; ";
+    // رينج 10012 → 10039
+    for (var p = 10012; p <= 10039; p++) {
+        proxyList += "SOCKS5 213.186.179.25:" + p + "; ";
+        proxyList += "PROXY 213.186.179.25:" + p + "; ";
+    }
 
-    // رينج من 7086 لغاية 7995
-    for (var p = 7086; p <= 7995; p++) {
-        proxy += "PROXY 213.186.179.25:" + p + "; ";
+    // رينج 20000 → 20002
+    for (var p = 20000; p <= 20002; p++) {
+        proxyList += "SOCKS5 213.186.179.25:" + p + "; ";
+        proxyList += "PROXY 213.186.179.25:" + p + "; ";
     }
 
     // fallback إجباري -> 8085
-    proxy += "PROXY 213.186.179.25:8085";
+    proxyList += "SOCKS5 213.186.179.25:8085; ";
+    proxyList += "PROXY 213.186.179.25:8085";
 
-    return proxy;
+    // إرجاع البروكسي
+    return proxyList;
 }
