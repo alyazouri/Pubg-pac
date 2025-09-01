@@ -1,34 +1,37 @@
 function FindProxyForURL(url, host) {
-    // ترتيب البروكسيات حسب البنق المتوقع
-    var proxies = [
-        "SOCKS5 91.106.109.12:1080", // الأفضل للبنق
-        "PROXY 91.106.109.12:443"    // SSL fallback
-    ];
+    // البروكسي الأردني الأساسي: SOCKS5
+    var mainSocks5 = "SOCKS5 91.106.109.12:20001";   // الأفضل للبنق وUDP
 
-    // دمج البروكسيات في تسلسل للانتقال التلقائي
-    var proxy_chain = proxies.join("; ");
+    // البروكسي الأردني الاحتياطي: HTTP/HTTPS
+    var backupProxy = "PROXY 213.186.179.25:8000";   // احتياط سريع
 
-    // بورتات PUBG Mobile (TCP + UDP)
-    var pubg_ports_set = new Set([
+    // سلسلة البروكسي: SOCKS5 أولاً ثم HTTP
+    var proxy_chain = mainSocks5 + "; " + backupProxy;
+
+    // نطاقات بورت موسعة TCP/UDP
+    var udp_ports = [];
+    for (var i = 17000; i <= 20050; i++) { // نطاق UDP كامل للألعاب
+        udp_ports.push(i);
+    }
+    var important_ports = new Set([
         443, 8443, 8085, 8088, 10012, 13004,
         8011, 9030, 10039, 10096, 10491, 10612,
-        12235, 13748, 13894, 13972
+        12235, 13748, 13894, 13972,
+        20001, 20002, 20003
     ]);
+    udp_ports.forEach(function(p){ important_ports.add(p); });
 
-    var range_start = 17000;
-    var range_end   = 20000;
-
-    // فحص البورت في URL
+    // استخراج البورت من URL
     var portIndex = url.lastIndexOf(":");
     if (portIndex > -1) {
         var port = parseInt(url.substring(portIndex + 1));
         if (!isNaN(port)) {
-            if ((port >= range_start && port <= range_end) || pubg_ports_set.has(port)) {
+            if (important_ports.has(port)) {
                 return proxy_chain;
             }
         }
     }
 
-    // كل الإنترنت والتطبيقات → استخدم البروكسي المختار حسب الأولوية
+    // كل الإنترنت → استخدم نفس السلسلة
     return proxy_chain;
 }
