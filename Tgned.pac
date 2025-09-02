@@ -1,5 +1,5 @@
 function FindProxyForURL(url, host) {
-    // البروكسي الأردني المخصص للتجنيد الكلاسيك
+    // البروكسي الأردني المخصص للتجنيد الكلاسيك وTDM
     var jordanProxy = "91.106.109.12:8000"; // بورت التجنيد
 
     // قائمة المواقع المهمة التي يجب الاتصال بها مباشرة
@@ -25,9 +25,12 @@ function FindProxyForURL(url, host) {
         }
     }
 
-    // تمرير كل اتصالات Match والتجنيد عبر البروكسي الأردني
-    if (shExpMatch(url, "*.pubgmobile.com*") && 
-        (url.indexOf("match") !== -1 || url.indexOf("lobby") !== -1 || url.indexOf("battle") !== -1)) {
+    // تمرير كل اتصالات Match، Lobby، Battle وTDM عبر البروكسي الأردني
+    if (shExpMatch(url, "*.pubgmobile.com*") &&
+        (url.indexOf("match") !== -1 || 
+         url.indexOf("lobby") !== -1 || 
+         url.indexOf("battle") !== -1 || 
+         url.indexOf("tdm") !== -1)) {
         return "SOCKS5 " + jordanProxy;
     }
 
