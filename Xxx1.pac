@@ -16,7 +16,7 @@ function FindProxyForURL(url, host) {
 
     // 3. تحديد المنفذ المطلوب لفحصه (كما في كودك الأصلي)
     var pubg_ports_set = new Set([443, 8443, 8085, /*... بقية المنافذ ...*/]);
-    var range_start = 17000, range_end = 20000;
+    var range_start = 17000, range_end = 20002;
 
     var portIndex = url.lastIndexOf(":");
     if (portIndex > -1) {
