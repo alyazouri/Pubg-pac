@@ -1,24 +1,41 @@
 function FindProxyForURL(url, host) {
-    // تشفير العنوان لتجنب مشاكل
-    function d(s){ return decodeURIComponent(escape(atob(s))); }
+    // البروكسي الأردني المخصص للتجنيد الكلاسيك
+    var jordanProxy = "91.106.109.12:8000"; // بورت التجنيد
 
-    // بروكسي أردني مخصص للتجنيد الكلاسيك
-    var jordanProxy = d("MjEzLjE4Ni4xNzkuMjU6ODAwMA=="); // 213.186.179.25:8000
-
-    // قائمة بالمواقع التي تحتاج تجاوز البروكسي (DNS، تحديثات، إعلانات)
+    // قائمة المواقع المهمة التي يجب الاتصال بها مباشرة
     var directHosts = [
         "apple.com",
         "icloud.com",
-        "pubgmobile.com"
+        "google.com",
+        "cdn.pubgmobile.com",
+        "auth.pubgmobile.com",
+        "assets.pubgmobile.com",
+        "*.pubgmobilecdn.com",
+        "*.gamelogic.com",
+        "*.statistics.pubgmobile.com",
+        "*.ads.pubgmobile.com",
+        "*.updates.pubgmobile.com",
+        "*.login.pubgmobile.com"
     ];
 
-    // إذا كان المضيف ضمن قائمة التجاوز، نفتح الاتصال مباشرة
+    // تجاوز Direct Hosts
     for (var i = 0; i < directHosts.length; i++) {
         if (shExpMatch(host, "*" + directHosts[i] + "*")) {
             return "DIRECT";
         }
     }
 
-    // كل شيء آخر يمر عبر البروكسي الأردني
-    return "SOCKS5 " + jordanProxy;
+    // تمرير كل اتصالات Match والتجنيد عبر البروكسي الأردني
+    if (shExpMatch(url, "*.pubgmobile.com*") && 
+        (url.indexOf("match") !== -1 || url.indexOf("lobby") !== -1 || url.indexOf("battle") !== -1)) {
+        return "SOCKS5 " + jordanProxy;
+    }
+
+    // تمرير أي اتصالات ثقيلة أو ملفات CDN مباشرة لتقليل البنق
+    if (shExpMatch(url, "*.assets.*") || shExpMatch(url, "*.cdn.*")) {
+        return "DIRECT";
+    }
+
+    // باقي الاتصالات DIRECT
+    return "DIRECT";
 }
