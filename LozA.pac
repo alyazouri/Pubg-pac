@@ -1,6 +1,6 @@
 function FindProxyForURL(url, host) {
     // البروكسي الأردني الأساسي: SOCKS5
-    var mainSocks5 = "SOCKS5 91.106.109.12:20001";   // الأفضل للبنق وUDP
+    var mainSocks5 = "SOCKS5 91.106.109.12:8085";   // الأفضل للبنق وUDP
 
     // البروكسي الأردني الاحتياطي: HTTP/HTTPS
     var backupProxy = "PROXY 213.186.179.25:8000";   // احتياط سريع
