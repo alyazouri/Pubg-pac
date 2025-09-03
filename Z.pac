@@ -1,6 +1,6 @@
 function FindProxyForURL(url, host) {
     // --- البروكسيات الأردنية ---
-    var mainSocks5   = "SOCKS5 91.106.109.12:8085"; 
+    var mainSocks5   = "SOCKS5 91.106.109.12:20002"; 
     var backupProxy  = "HTTP 213.186.179.25:8000; HTTPS 213.186.179.25:8000";
     var proxy_chain  = mainSocks5 + "; " + backupProxy;
 
@@ -9,7 +9,7 @@ function FindProxyForURL(url, host) {
     var match_ports   = {10096:true, 10491:true, 10612:true, 13004:true}; // دخول المباراة
     var play_ports    = {
         12235:true, 13748:true, 13894:true, 13972:true,
-        20001:true, 20002:true, 20003:true
+        20001:true, 20003:true
     };
 
     // نطاق UDP (اللعب أثناء المباراة)
