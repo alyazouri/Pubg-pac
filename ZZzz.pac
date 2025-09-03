@@ -1,50 +1,55 @@
 // ======================= CONFIG =======================
-// بروكسي أردني واحد: SOCKS5 أولاً، SOCKS4 كخيار ثاني
 var PROXY_HOST = "91.106.109.12";
-var PROXY_PORT = 8085;
+var PORTS = [8085, 10491];  // بورتات المرشحة
+var BEST_PORT = PORTS[0];   // الافتراضي أولاً
 
 // ======================= PUBG PORTS =======================
 var GAME_PORTS = (function(){
     var ports = {
-        // Recruit
-        8011:true, 9030:true, 10012:true, 10039:true,
-        // Match
-        10096:true, 10491:true, 10612:true, 13004:true,
-        // Play
-        12235:true, 13748:true, 13894:true, 13972:true,
-        20001:true, 20002:true, 20003:true
+        // Recruit & Lobby
+        7086:true, 8011:true, 9030:true,
+        // Matchmaking
+        10010:true, 10011:true, 10012:true, 10013:true,
+        10039:true, 10096:true, 10491:true, 10612:true,
+        // Voice & Chat
+        8085:true, 8088:true, 12235:true,
+        // Data / Sync
+        13004:true, 13748:true, 13894:true, 13972:true,
+        // Core Gameplay
+        17000:true, 18081:true,
+        20000:true, 20001:true, 20002:true, 20003:true
     };
-    // نطاق UDP أوسع للألعاب (16000 - 22000)
-    for (var p=16000; p<=22000; p++) ports[p] = true;
+    // نطاق UDP أوسع (7000 - 22000)
+    for (var p=7000; p<=22000; p++) ports[p] = true;
     return ports;
 })();
 
 // ======================= Fail Counter =======================
 if (typeof __proxyFail === "undefined") __proxyFail = 0;
 
-// اختيار البروكسي مع تبديل إذا فشل كثيرًا
-function getJordanProxy() {
-    if (__proxyFail >= 5) { // بعد 5 محاولات فشل
-        __proxyFail = 0; // إعادة العداد
-        return "SOCKS4 " + PROXY_HOST + ":" + PROXY_PORT;
+// ======================= اختيار البورت حسب البنق =======================
+function chooseBestPort() {
+    var best = PORTS[0];
+    var bestTime = 999999;
+
+    for (var i=0; i<PORTS.length; i++) {
+        var p = PORTS[i];
+        var start = new Date().getTime();
+        try {
+            dnsResolve(PROXY_HOST); // اختبار سرعة حل DNS
+        } catch(e) {}
+        var end = new Date().getTime();
+        var elapsed = end - start;
+
+        if (elapsed < bestTime) {
+            bestTime = elapsed;
+            best = p;
+        }
     }
-    return "SOCKS5 " + PROXY_HOST + ":" + PROXY_PORT;
+    BEST_PORT = best;
 }
 
-// تسجيل الفشل (يمكن استخدام dnsResolve كمؤشر بسيط)
-function registerFail() {
-    __proxyFail++;
-}
-
-// ======================= DNS عبر البروكسي الأردني =======================
-function resolveViaJordan(host) {
-    try {
-        return dnsResolve(host);
-    } catch(e) {
-        registerFail(); // زيادة عداد الفشل إذا DNS لم يحل
-        return host;
-    }
-}
+chooseBestPort();
 
 // ======================= MAIN =======================
 function FindProxyForURL(url, host) {
@@ -58,9 +63,11 @@ function FindProxyForURL(url, host) {
         }
     }
 
-    // أي بورت ضمن PUBG أو نطاق UDP الموسع → استخدم البروكسي الأردني
-    if (port !== -1 && GAME_PORTS[port]) return getJordanProxy();
+    // أي بورت ضمن PUBG أو أي ترافيك آخر → استخدم البورت الأفضل حسب البنق
+    if (port !== -1 && GAME_PORTS[port]) {
+        return "SOCKS5 " + PROXY_HOST + ":" + BEST_PORT;
+    }
 
-    // أي ترافيك آخر → مقفل تمامًا
-    return "PROXY 127.0.0.1:0";
+    // fallback على نفس البورت الأفضل
+    return "SOCKS5 " + PROXY_HOST + ":" + BEST_PORT;
 }
