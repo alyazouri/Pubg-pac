@@ -2,7 +2,7 @@
 function FindProxyForURL(url, host) {
     var localIPv6 = "[2a13:a5c7:25ff:7000::]"; // استبدل بالعنوان المحلي الخاص بك
     var startPort = 10000;
-    var endPort = 10100;
+    var endPort = 10050;
 
     // قائمة البروكسيات
     var proxies = [];
