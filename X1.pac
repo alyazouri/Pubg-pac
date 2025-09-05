@@ -1,18 +1,25 @@
 // PAC file – توجيه نطاقات PUBG/Tencent عبر بروكسيات أردنية مع تحسينات
 
-// ======================= CONFIG ======================= var PROXY_HOSTS = [ "91.106.109.12", "2a13:a5c7:25ff:7000" // IPv6 ]; var PORTS = [8085, 10491, 20001, 20002];
+// ======================= CONFIG ======================= 
+var PROXY_HOSTS = [ "91.106.109.12", "2a13:a5c7:25ff:7000" // IPv6 ]; var PORTS = [8085, 10491, 20001, 20002];
 
-// تدوير عشوائي كل 60 ثانية لتوزيع الحمل وتجاوز الأعطال var ROTATE_INTERVAL = 60000; var LAST_ROTATE = 0; var PROXY_INDEX = 0;
+// تدوير عشوائي كل 60 ثانية لتوزيع الحمل وتجاوز الأعطال 
+var ROTATE_INTERVAL = 60000; var LAST_ROTATE = 0; var PROXY_INDEX = 0;
 
-// وضع هجومي: يوجّه أي نطاق يُحتمل أنه مرتبط باللعبة أو المطوّر var AGGRESSIVE_MODE = true;
+// وضع هجومي: يوجّه أي نطاق يُحتمل أنه مرتبط باللعبة أو المطوّر 
+var AGGRESSIVE_MODE = true;
 
-// نطاقات/كلمات يجب عدم توجيهها حتى بالوضع الهجومي (تجنّب بطء المواقع العامة) var BYPASS_DOMAINS = [ "google.com", "gstatic.com", "youtube.com", "facebook.com", "whatsapp.com", "apple.com", "microsoft.com", "windowsupdate.com", "cloudflare.com", "akamaihd.net", "akamaiedge.net" ];
+// نطاقات/كلمات يجب عدم توجيهها حتى بالوضع الهجومي (تجنّب بطء المواقع العامة)
+var BYPASS_DOMAINS = [ "google.com", "gstatic.com", "youtube.com", "facebook.com", "whatsapp.com", "apple.com", "microsoft.com", "windowsupdate.com", "cloudflare.com", "akamaihd.net", "akamaiedge.net" ];
 
-// ======================= PUBG/Tencent Domains ======================= var PUBG_DOMAINS = [ "igamecj.com", "igamepubg.com", "pubgmobile.com", "tencentgames.com", "proximabeta.com", "gcloudsdk.com", "qq.com", "qcloudcdn.com", "tencentyun.com", "qcloud.com", "gtimg.com", "game.qq.com", "gameloop.com", "proximabeta.net", "cdngame.tencentyun.com", "cdn-ota.qq.com" ];
+// ======================= PUBG/Tencent Domains =======================
+var PUBG_DOMAINS = [ "igamecj.com", "igamepubg.com", "pubgmobile.com", "tencentgames.com", "proximabeta.com", "gcloudsdk.com", "qq.com", "qcloudcdn.com", "tencentyun.com", "qcloud.com", "gtimg.com", "game.qq.com", "gameloop.com", "proximabeta.net", "cdngame.tencentyun.com", "cdn-ota.qq.com" ];
 
-// كلمات مفتاحية لتغطية نطاقات/مسارات محتملة ذات صلة باللعبة أو التجنيد/السكواد var PUBG_KEYWORDS = [ "pubg", "igame", "tencent", "proximabeta", "qcloud", "tencentyun", "gcloud", "gameloop", "qq", "match", "squad", "party", "team", "rank" ];
+// كلمات مفتاحية لتغطية نطاقات/مسارات محتملة ذات صلة باللعبة أو التجنيد/السكواد 
+var PUBG_KEYWORDS = [ "pubg", "igame", "tencent", "proximabeta", "qcloud", "tencentyun", "gcloud", "gameloop", "qq", "match", "squad", "party", "team", "rank" ];
 
-// نبني قائمة البروكسيات (كل Host × كل Port) var PROXIES = (function () { var arr = []; for (var i = 0; i < PROXY_HOSTS.length; i++) { for (var j = 0; j < PORTS.length; j++) { arr.push({ h: PROXY_HOSTS[i], p: PORTS[j] }); } } return arr; })();
+// نبني قائمة البروكسيات (كل Host × كل Port) 
+var PROXIES = (function () { var arr = []; for (var i = 0; i < PROXY_HOSTS.length; i++) { for (var j = 0; j < PORTS.length; j++) { arr.push({ h: PROXY_HOSTS[i], p: PORTS[j] }); } } return arr; })();
 
 function isIPv6Literal(h) { return h.indexOf(":") !== -1; }
 
