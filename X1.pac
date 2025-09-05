@@ -26,23 +26,31 @@ var PROXIES = (function () { var arr = []; for (var i = 0; i < PROXY_HOSTS.lengt
 
 function isIPv6Literal(h) { return h.indexOf(":") !== -1; }
 
-function proxyTokens(entry) { var host = isIPv6Literal(entry.h) ? "[" + entry.h + "]" : entry.h; // نرجع SOCKS5 ثم SOCKS كبدائل return ["SOCKS5 " + host + ":" + entry.p, "SOCKS " + host + ":" + entry.p]; }
+function proxyTokens(entry) { var host = isIPv6Literal(entry.h) ? "[" + entry.h + "]" : entry.h; 
+// نرجع SOCKS5 ثم SOCKS كبدائل 
+return ["SOCKS5 " + host + ":" + entry.p, "SOCKS " + host + ":" + entry.p]; }
 
 function buildProxyChain(startIdx) { if (PROXIES.length === 0) return "DIRECT"; var parts = []; for (var k = 0; k < PROXIES.length; k++) { var idx = (startIdx + k) % PROXIES.length; var toks = proxyTokens(PROXIES[idx]); for (var t = 0; t < toks.length; t++) { parts.push(toks[t]); } } parts.push("DIRECT"); return parts.join("; "); }
 
 function isPlainIP(host) { return (/^\d{1,3}(.\d{1,3}){3}$/.test(host) || /^$?[0-9a-fA-F:]+$?$/.test(host)); }
 
-function isPUBGHost(host) { if (isPlainIP(host)) return false; // IP مباشر: نخليه DIRECT var h = host.toLowerCase(); for (var i = 0; i < PUBG_DOMAINS.length; i++) { var d = PUBG_DOMAINS[i]; if (h === d || shExpMatch(h, "*." + d)) return true; } return false; }
+function isPUBGHost(host) { if (isPlainIP(host)) return false; 
+// IP مباشر: نخليه 
+DIRECT var h = host.toLowerCase(); for (var i = 0; i < PUBG_DOMAINS.length; i++) { var d = PUBG_DOMAINS[i]; if (h === d || shExpMatch(h, "*." + d)) return true; } return false; }
 
 function hasKeyword(hostOrUrl) { var s = (hostOrUrl || "").toLowerCase(); for (var i = 0; i < PUBG_KEYWORDS.length; i++) { if (s.indexOf(PUBG_KEYWORDS[i]) !== -1) return true; } return false; }
 
 function isBypassDomain(host) { var h = host.toLowerCase(); for (var i = 0; i < BYPASS_DOMAINS.length; i++) { var d = BYPASS_DOMAINS[i]; if (h === d || shExpMatch(h, "*." + d)) return true; } return false; }
 
-function isPrivateOrLocal(host) { // أسماء داخلية بدون نقطة if (isPlainHostName(host)) return true;
+function isPrivateOrLocal(host) { 
+// أسماء داخلية بدون نقطة 
+if (isPlainHostName(host)) return true;
 
-// IPv6 محلي if (isIPv6Literal(host)) { var h = host.toLowerCase(); if (h === "::1" || shExpMatch(h, "fe80::*")) return true; return false; }
+// IPv6 محلي 
+if (isIPv6Literal(host)) { var h = host.toLowerCase(); if (h === "::1" || shExpMatch(h, "fe80::*")) return true; return false; }
 
-// شبكات خاصة لـ IPv4 var ip = dnsResolve(host); if (!ip) return false; if (isInNet(ip, "127.0.0.0", "255.0.0.0")) return true; if (isInNet(ip, "10.0.0.0", "255.0.0.0")) return true; if (isInNet(ip, "172.16.0.0", "255.240.0.0")) return true; if (isInNet(ip, "192.168.0.0", "255.255.0.0")) return true; return false; }
+// شبكات خاصة لـ 
+IPv4 var ip = dnsResolve(host); if (!ip) return false; if (isInNet(ip, "127.0.0.0", "255.0.0.0")) return true; if (isInNet(ip, "10.0.0.0", "255.0.0.0")) return true; if (isInNet(ip, "172.16.0.0", "255.240.0.0")) return true; if (isInNet(ip, "192.168.0.0", "255.255.0.0")) return true; return false; }
 
 function shouldProxy(url, host) { if (isBypassDomain(host)) return false;
 
@@ -54,7 +62,8 @@ if (AGGRESSIVE_MODE) { // التوسيع بالكلمات المفتاحية ع�
 
 if (!shouldProxy(url, host)) return "DIRECT";
 
-// تدوير عشوائي كل فترة var now = new Date().getTime(); if (now - LAST_ROTATE > ROTATE_INTERVAL) { LAST_ROTATE = now; PROXY_INDEX = Math.floor(Math.random() * (PROXIES.length || 1)); }
+// تدوير عشوائي كل فترة 
+var now = new Date().getTime(); if (now - LAST_ROTATE > ROTATE_INTERVAL) { LAST_ROTATE = now; PROXY_INDEX = Math.floor(Math.random() * (PROXIES.length || 1)); }
 
 return buildProxyChain(PROXY_INDEX); }
 
