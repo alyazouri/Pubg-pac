@@ -56,9 +56,12 @@ function shouldProxy(url, host) { if (isBypassDomain(host)) return false;
 
 // نطاقات PUBG/Tencent المعروفة if (isPUBGHost(host)) return true;
 
-if (AGGRESSIVE_MODE) { // التوسيع بالكلمات المفتاحية على host أو كامل URL if (hasKeyword(host) || hasKeyword(url)) return true; } return false; }
+if (AGGRESSIVE_MODE) { 
+// التوسيع بالكلمات المفتاحية على host أو كامل URL 
+if (hasKeyword(host) || hasKeyword(url)) return true; } return false; }
 
-// ======================= MAIN ======================= function FindProxyForURL(url, host) { if (isPrivateOrLocal(host)) return "DIRECT";
+// ======================= MAIN ======================= 
+function FindProxyForURL(url, host) { if (isPrivateOrLocal(host)) return "DIRECT";
 
 if (!shouldProxy(url, host)) return "DIRECT";
 
