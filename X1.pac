@@ -1,10 +1,13 @@
 // PAC file – توجيه نطاقات PUBG/Tencent عبر بروكسيات أردنية مع تحسينات
 
 // ======================= CONFIG ======================= 
-var PROXY_HOSTS = [ "91.106.109.12", "2a13:a5c7:25ff:7000" // IPv6 ]; var PORTS = [8085, 10491, 20001, 20002];
+var PROXY_HOSTS = [ "91.106.109.12", "2a13:a5c7:25ff:7000" // IPv6 ]; 
+var PORTS = [8085, 10491, 20001, 20002];
 
 // تدوير عشوائي كل 60 ثانية لتوزيع الحمل وتجاوز الأعطال 
-var ROTATE_INTERVAL = 60000; var LAST_ROTATE = 0; var PROXY_INDEX = 0;
+var ROTATE_INTERVAL = 60000; 
+var LAST_ROTATE = 0; 
+var PROXY_INDEX = 0;
 
 // وضع هجومي: يوجّه أي نطاق يُحتمل أنه مرتبط باللعبة أو المطوّر 
 var AGGRESSIVE_MODE = true;
