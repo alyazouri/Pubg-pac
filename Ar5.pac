@@ -1,20 +1,27 @@
 // ======================================================================
-// PAC – PUBG Mobile الأردن: أقل بنق + Failover كامل
-// ملاحظة: PAC لا يمرّر UDP. لأفضل بنق فعلي استخدم VPN/TUN يدعم UDP.
+// PAC – PUBG Mobile الأردن: Gaming + Web + احتياط
 // ======================================================================
 
 // ======================= CONFIG =======================
-var FORCE_ALL        = true;   // true: وجّه كل الترافيك عبر البروكسي
-var FORBID_DIRECT    = true;   // true: لا تضف DIRECT في نهاية السلسلة
-var BLOCK_IR         = true;   // حجب نطاقات .ir
-var ENABLE_SOCKS     = true;   // فعّل SOCKS (على iOS غالباً يُتجاهل)
-var ENABLE_HTTP      = true;   // فعّل HTTP Proxy
-var ORDER_IPV6_FIRST = true;   // فضّل IPv6 أولاً داخل نفس التقييم
+var FORCE_ALL        = true;   // كل الترافيك عبر البروكسي
+var FORBID_DIRECT    = true;   // ما في DIRECT
+var BLOCK_IR         = true;   // حجب .ir
+var ENABLE_SOCKS     = true;   // SOCKS5 أولاً
+var ENABLE_HTTP      = true;   // HTTP احتياط
+var ORDER_IPV6_FIRST = true;   // IPv6 أولوية
 
 // ======================= PROXIES =======================
 var PROXIES_CFG = [
-  { ip: "91.106.109.12",       socksPorts: [8085,8086,8087,8088,20001,20002,10491], httpPorts: [80,443,8080,3128] },
-  { ip: "2a13:a5c7:25ff:7000", socksPorts: [8085,8086,8087,8088,20001,20002,10491], httpPorts: [80,443,8080,3128] }
+  { 
+    ip: "91.106.109.12",       
+    socksPorts: [20000,20001,20003,8000,9999,10000,10010,10011,10012,10013], 
+    httpPorts: [8080,8081,8085,8087,8088,8880,8000,9999,10000,10010,10011,10012,10013] 
+  },
+  { 
+    ip: "2a13:a5c7:25ff:7000", 
+    socksPorts: [20000,20001,20003,8000,9999,10000,10010,10011,10012,10013], 
+    httpPorts: [8080,8081,8085,8087,8088,8880,8000,9999,10000,10010,10011,10012,10013] 
+  }
 ];
 
 // ======================= GAME DOMAINS =======================
@@ -23,7 +30,6 @@ var GAME_DOMAINS = [
   "proximabeta.com","proximabeta.net","tencentyun.com","qcloud.com",
   "qcloudcdn.com","gtimg.com","game.qq.com","cdn-ota.qq.com","cdngame.tencentyun.com","gcloud.qq.com"
 ];
-
 var KEYWORDS = ["pubg","tencent","proximabeta","tencentyun","qcloud","gcloud"];
 
 // ======================= HELPERS =======================
@@ -51,11 +57,11 @@ function dedup(arr){
   return out;
 }
 
-// ======================= SCORING/ORDER =======================
-var PROXY_SCORE = {}; // ip -> score منخفض أفضل
+// ======================= SCORING =======================
+var PROXY_SCORE = {};
 function evaluateProxy(ip){
   if (PROXY_SCORE[ip] === undefined){
-    PROXY_SCORE[ip] = (ip === "91.106.109.12") ? 1 : 2; // IPv4 الأردني أفضل
+    PROXY_SCORE[ip] = (ip === "91.106.109.12") ? 1 : 2; // IPv4 الأردني أولاً
   }
   return PROXY_SCORE[ip];
 }
@@ -76,34 +82,18 @@ function sortProxies(){
   });
   return arr;
 }
-function orderPorts(ports, preferred){
-  var out=[], used={};
-  for (var i=0;i<preferred.length;i++){
-    var p = preferred[i];
-    for (var j=0;j<ports.length;j++){
-      if (ports[j] === p && !used[p]){ out.push(p); used[p]=1; }
-    }
-  }
-  for (var k=0;k<ports.length;k++){
-    var v = ports[k];
-    if (!used[v]){ out.push(v); used[v]=1; }
-  }
-  return out;
-}
 
 // ======================= TOKEN BUILD =======================
 function buildTokens(){
-  var preferredSocks = [8085,8086,8087,8088,20001,20002,10491];
   var toks = [];
   var ordered = sortProxies();
   for (var i=0;i<ordered.length;i++){
     var e = ordered[i];
     var host = bracketHost(e.ip);
     if (ENABLE_SOCKS){
-      var ss = orderPorts(e.socksPorts||[], preferredSocks);
+      var ss = e.socksPorts||[];
       for (var s=0;s<ss.length;s++){
         toks.push("SOCKS5 " + host + ":" + ss[s]);
-        toks.push("SOCKS "  + host + ":" + ss[s]);
       }
     }
     if (ENABLE_HTTP){
@@ -128,12 +118,10 @@ function buildProxyChain(){
 function FindProxyForURL(url, host){
   host = host || url;
 
-  // حجب .ir
   if (BLOCK_IR && isIranTLD(host)) return "PROXY 127.0.0.1:9";
 
   var chain = buildProxyChain();
 
-  // نطاقات اللعبة أو كلمات مفتاحية
   if (hostInList(host, GAME_DOMAINS) || hasKeyword(host) || hasKeyword(url)) return chain;
 
   if (FORCE_ALL) return chain;
