@@ -1,27 +1,20 @@
 // ======================================================================
-// PAC – PUBG Mobile الأردن: Gaming + Web + احتياط
+// PAC – PUBG Mobile الأردن: Gear Up Dynamic Ping Optimized
 // ======================================================================
 
 // ======================= CONFIG =======================
-var FORCE_ALL        = true;   // كل الترافيك عبر البروكسي
-var FORBID_DIRECT    = true;   // ما في DIRECT
-var BLOCK_IR         = true;   // حجب .ir
-var ENABLE_SOCKS     = true;   // SOCKS5 أولاً
-var ENABLE_HTTP      = true;   // HTTP احتياط
-var ORDER_IPV6_FIRST = true;   // IPv6 أولوية
+var FORCE_ALL        = true;  
+var FORBID_DIRECT    = true;  
+var BLOCK_IR         = true;  
+var ENABLE_SOCKS     = true;  
+var ENABLE_HTTP      = true;  
+var ORDER_IPV6_FIRST = false;  
+var MAX_ACTIVE_PROXIES = 2; // استخدام أفضل بروكسيين فقط لتثبيت البنق
 
 // ======================= PROXIES =======================
 var PROXIES_CFG = [
-  { 
-    ip: "91.106.109.12",       
-    socksPorts: [20000,20001,20003,8000,9999,10000,10010,10011,10012,10013], 
-    httpPorts: [8080,8081,8085,8087,8088,8880,8000,9999,10000,10010,10011,10012,10013] 
-  },
-  { 
-    ip: "2a13:a5c7:25ff:7000", 
-    socksPorts: [20000,20001,20003,8000,9999,10000,10010,10011,10012,10013], 
-    httpPorts: [8080,8081,8085,8087,8088,8880,8000,9999,10000,10010,10011,10012,10013] 
-  }
+  { ip: "91.106.109.12",       socksPorts: [20000,20001,20003], httpPorts: [8080,8081,8085,8087,8088,8880] }, // IPv4 أردني
+  { ip: "2a13:a5c7:25ff:7000", socksPorts: [20000,20001,20003], httpPorts: [8080,8081,8085,8087,8088,8880] }  // IPv6 أردني
 ];
 
 // ======================= GAME DOMAINS =======================
@@ -30,6 +23,9 @@ var GAME_DOMAINS = [
   "proximabeta.com","proximabeta.net","tencentyun.com","qcloud.com",
   "qcloudcdn.com","gtimg.com","game.qq.com","cdn-ota.qq.com","cdngame.tencentyun.com","gcloud.qq.com"
 ];
+
+// ======================= LOCAL DOMAINS =======================
+var LOCAL_DOMAINS = ["pubg.jo","jo-gaming.net","localmatch.pubg.com"];
 var KEYWORDS = ["pubg","tencent","proximabeta","tencentyun","qcloud","gcloud"];
 
 // ======================= HELPERS =======================
@@ -57,11 +53,15 @@ function dedup(arr){
   return out;
 }
 
-// ======================= SCORING =======================
+// ======================= SCORING/ORDER =======================
 var PROXY_SCORE = {};
 function evaluateProxy(ip){
   if (PROXY_SCORE[ip] === undefined){
-    PROXY_SCORE[ip] = (ip === "91.106.109.12") ? 1 : 2; // IPv4 الأردني أولاً
+    switch(ip){
+      case "91.106.109.12": PROXY_SCORE[ip] = 0; break;
+      case "2a13:a5c7:25ff:7000": PROXY_SCORE[ip] = 1; break;
+      default: PROXY_SCORE[ip] = 5;
+    }
   }
   return PROXY_SCORE[ip];
 }
@@ -80,38 +80,34 @@ function sortProxies(){
     }
     return 0;
   });
-  return arr;
+  return arr.slice(0, MAX_ACTIVE_PROXIES); // أفضل بروكسيين فقط لتثبيت البنق
 }
 
-// ======================= TOKEN BUILD =======================
-function buildTokens(){
-  var toks = [];
+// ======================= SELECT BEST PROXY =======================
+function selectFastestProxy(){
   var ordered = sortProxies();
-  for (var i=0;i<ordered.length;i++){
-    var e = ordered[i];
-    var host = bracketHost(e.ip);
-    if (ENABLE_SOCKS){
-      var ss = e.socksPorts||[];
-      for (var s=0;s<ss.length;s++){
-        toks.push("SOCKS5 " + host + ":" + ss[s]);
-      }
-    }
-    if (ENABLE_HTTP){
-      var hp = e.httpPorts||[];
-      for (var h=0;h<hp.length;h++){
-        toks.push("PROXY " + host + ":" + hp[h]);
-      }
-    }
+  return ordered[0]; // البروكسي الأفضل دائماً أولاً
+}
+
+// ======================= BUILD TOKENS =======================
+function buildTokens(proxy){
+  var toks = [];
+  var host = bracketHost(proxy.ip);
+  if (ENABLE_SOCKS){
+      for (var s=0;s<(proxy.socksPorts||[]).length;s++)
+          toks.push("SOCKS5 "+host+":"+proxy.socksPorts[s]);
+  }
+  if (ENABLE_HTTP){
+      for (var h=0;h<(proxy.httpPorts||[]).length;h++)
+          toks.push("PROXY "+host+":"+proxy.httpPorts[h]);
   }
   return dedup(toks);
 }
-var PROXY_TOKENS = buildTokens();
 
+// ======================= BUILD PROXY CHAIN =======================
 function buildProxyChain(){
-  if (!PROXY_TOKENS || PROXY_TOKENS.length === 0) return "DIRECT";
-  var out = PROXY_TOKENS.slice(0);
-  if (!FORBID_DIRECT) out.push("DIRECT");
-  return out.join("; ");
+  var bestProxy = selectFastestProxy();
+  return buildTokens(bestProxy).join("; ");
 }
 
 // ======================= MAIN =======================
@@ -120,11 +116,11 @@ function FindProxyForURL(url, host){
 
   if (BLOCK_IR && isIranTLD(host)) return "PROXY 127.0.0.1:9";
 
-  var chain = buildProxyChain();
+  if (hostInList(host, GAME_DOMAINS) || hostInList(host, LOCAL_DOMAINS) || hasKeyword(host) || hasKeyword(url)) {
+      return buildProxyChain(); // استخدم أفضل بروكسي ديناميكياً لكل طلب حساس
+  }
 
-  if (hostInList(host, GAME_DOMAINS) || hasKeyword(host) || hasKeyword(url)) return chain;
-
-  if (FORCE_ALL) return chain;
+  if (FORCE_ALL) return buildProxyChain();
 
   return "DIRECT";
 }
