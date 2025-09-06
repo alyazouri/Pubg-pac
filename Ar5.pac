@@ -1,20 +1,30 @@
 // ======================================================================
-// PAC – PUBG Mobile الأردن: Gear Up Dynamic Ping Optimized
+// PAC – PUBG Mobile الأردن: Ultra Smart Local + Backup Proxy + HTTP/3 Ready
 // ======================================================================
 
 // ======================= CONFIG =======================
-var FORCE_ALL        = true;  
-var FORBID_DIRECT    = true;  
-var BLOCK_IR         = true;  
-var ENABLE_SOCKS     = true;  
-var ENABLE_HTTP      = true;  
-var ORDER_IPV6_FIRST = false;  
-var MAX_ACTIVE_PROXIES = 2; // استخدام أفضل بروكسيين فقط لتثبيت البنق
+var FORCE_ALL        = true;
+var FORBID_DIRECT    = true;
+var BLOCK_IR         = true;
+var ENABLE_SOCKS     = true;
+var ENABLE_HTTP      = true;
+var ORDER_IPV6_FIRST = false;
+var MAX_ACTIVE_PROXIES = 2;
 
 // ======================= PROXIES =======================
 var PROXIES_CFG = [
-  { ip: "91.106.109.12",       socksPorts: [20000,20001,20003], httpPorts: [8080,8081,8085,8087,8088,8880] }, // IPv4 أردني
-  { ip: "2a13:a5c7:25ff:7000", socksPorts: [20000,20001,20003], httpPorts: [8080,8081,8085,8087,8088,8880] }  // IPv6 أردني
+  { 
+    ip: "91.106.109.12",
+    socksPorts: [20000,20001,20003],
+    httpPorts: [8080,8081,8085,8087,8088,8880],
+    http3: true // جاهز لاستخدام HTTP/3 على مستوى البروكسي
+  },
+  { 
+    ip: "91.106.109.11",
+    socksPorts: [20000,20001,20003],
+    httpPorts: [8080,8081,8085,8087,8088,8880],
+    http3: true
+  }
 ];
 
 // ======================= GAME DOMAINS =======================
@@ -25,7 +35,15 @@ var GAME_DOMAINS = [
 ];
 
 // ======================= LOCAL DOMAINS =======================
-var LOCAL_DOMAINS = ["pubg.jo","jo-gaming.net","localmatch.pubg.com"];
+var LOCAL_DOMAINS = [
+  "pubg.jo",
+  "jo-gaming.net",
+  "localmatch.pubg.com",
+  "matchmaking.jo",
+  "pubg-local.jo",
+  "jo-server.pubg.com"
+];
+
 var KEYWORDS = ["pubg","tencent","proximabeta","tencentyun","qcloud","gcloud"];
 
 // ======================= HELPERS =======================
@@ -53,60 +71,70 @@ function dedup(arr){
   return out;
 }
 
-// ======================= SCORING/ORDER =======================
+// ======================= SCORING =======================
 var PROXY_SCORE = {};
 function evaluateProxy(ip){
-  if (PROXY_SCORE[ip] === undefined){
+  if(PROXY_SCORE[ip]===undefined){
     switch(ip){
-      case "91.106.109.12": PROXY_SCORE[ip] = 0; break;
-      case "2a13:a5c7:25ff:7000": PROXY_SCORE[ip] = 1; break;
-      default: PROXY_SCORE[ip] = 5;
+      case "91.106.109.12": PROXY_SCORE[ip]=0; break;
+      case "91.106.109.11": PROXY_SCORE[ip]=1; break;
+      default: PROXY_SCORE[ip]=5;
     }
   }
   return PROXY_SCORE[ip];
 }
+
+// ======================= SORT PROXIES =======================
 function sortProxies(){
   var arr = PROXIES_CFG.slice();
   arr.sort(function(a,b){
-    var sa = evaluateProxy(a.ip), sb = evaluateProxy(b.ip);
-    if (sa !== sb) return sa - sb;
-    var a6 = isIPv6Literal(a.ip), b6 = isIPv6Literal(b.ip);
-    if (ORDER_IPV6_FIRST){
-      if (a6 && !b6) return -1;
-      if (!a6 && b6) return 1;
-    } else {
-      if (a6 && !b6) return 1;
-      if (!a6 && b6) return -1;
+    var sa=evaluateProxy(a.ip), sb=evaluateProxy(b.ip);
+    if(sa!==sb) return sa-sb;
+    var a6=isIPv6Literal(a.ip), b6=isIPv6Literal(b.ip);
+    if(!ORDER_IPV6_FIRST){
+      if(a6&&!b6) return 1;
+      if(!a6&&b6) return -1;
+    }else{
+      if(a6&&!b6) return -1;
+      if(!a6&&b6) return 1;
     }
     return 0;
   });
-  return arr.slice(0, MAX_ACTIVE_PROXIES); // أفضل بروكسيين فقط لتثبيت البنق
+  return arr.slice(0, MAX_ACTIVE_PROXIES);
 }
 
 // ======================= SELECT BEST PROXY =======================
-function selectFastestProxy(){
+function selectFastestProxy(url){
   var ordered = sortProxies();
-  return ordered[0]; // البروكسي الأفضل دائماً أولاً
+  for(var i=0;i<ordered.length;i++){
+    if(ordered[i].ip==="91.106.109.12") return ordered[i];
+  }
+  return ordered[0];
 }
 
 // ======================= BUILD TOKENS =======================
 function buildTokens(proxy){
-  var toks = [];
-  var host = bracketHost(proxy.ip);
-  if (ENABLE_SOCKS){
-      for (var s=0;s<(proxy.socksPorts||[]).length;s++)
-          toks.push("SOCKS5 "+host+":"+proxy.socksPorts[s]);
+  var toks=[];
+  var host=bracketHost(proxy.ip);
+  if(ENABLE_SOCKS){
+    for(var s=0;s<(proxy.socksPorts||[]).length;s++)
+      toks.push("SOCKS5 "+host+":"+proxy.socksPorts[s]);
   }
-  if (ENABLE_HTTP){
-      for (var h=0;h<(proxy.httpPorts||[]).length;h++)
-          toks.push("PROXY "+host+":"+proxy.httpPorts[h]);
+  if(ENABLE_HTTP){
+    for(var h=0;h<(proxy.httpPorts||[]).length;h++){
+      if(proxy.http3){
+        toks.push("PROXY "+host+":"+proxy.httpPorts[h]+"; HTTP/3 Ready");
+      }else{
+        toks.push("PROXY "+host+":"+proxy.httpPorts[h]);
+      }
+    }
   }
   return dedup(toks);
 }
 
 // ======================= BUILD PROXY CHAIN =======================
-function buildProxyChain(){
-  var bestProxy = selectFastestProxy();
+function buildProxyChain(url){
+  var bestProxy=selectFastestProxy(url);
   return buildTokens(bestProxy).join("; ");
 }
 
@@ -114,13 +142,13 @@ function buildProxyChain(){
 function FindProxyForURL(url, host){
   host = host || url;
 
-  if (BLOCK_IR && isIranTLD(host)) return "PROXY 127.0.0.1:9";
+  if(BLOCK_IR && isIranTLD(host)) return "PROXY 127.0.0.1:9";
 
-  if (hostInList(host, GAME_DOMAINS) || hostInList(host, LOCAL_DOMAINS) || hasKeyword(host) || hasKeyword(url)) {
-      return buildProxyChain(); // استخدم أفضل بروكسي ديناميكياً لكل طلب حساس
+  if(hostInList(host,GAME_DOMAINS) || hostInList(host,LOCAL_DOMAINS) || hasKeyword(host) || hasKeyword(url)){
+    return buildProxyChain(url);
   }
 
-  if (FORCE_ALL) return buildProxyChain();
+  if(FORCE_ALL) return buildProxyChain(url);
 
   return "DIRECT";
 }
