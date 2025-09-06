@@ -1,48 +1,30 @@
-// ======================================================================
-// PAC – PUBG Mobile محسن (ترتيب IPv6 أولاً + توزيع ثابت + نطاقات اللعبة)
-// ملاحظة: PAC لا يمرّر UDP ولا يضبط MTU. يُستخدم لتوجيه HTTP/HTTPS فقط.
-// ======================================================================
-
 // ======================= CONFIG =======================
-var FORCE_ALL             = true;    // true: وجّه كل شيء عبر البروكسي (محلي بالكامل)
-var FORBID_DIRECT         = true;    // true: لا يسمح بـ DIRECT كحل أخير
-var ENABLE_SOCKS          = false;   // على iOS غالبًا false، فعّله للحاسوب/المحاكي
-var ENABLE_HTTP           = true;    // يجب أن يكون true على iOS
-var USE_DNS_PRIVATE_CHECK = false;   // فحص LAN عبر dnsResolve (أبطأ قليلاً)
+var FORCE_ALL             = true;   // إجبار كل الترافيك على البروكسي
+var FORBID_DIRECT         = true;   // منع DIRECT لأي ترافيك غير محدد
+var BLOCK_IR              = true;   // حجب نطاقات .ir
+var ENABLE_SOCKS          = true;   // تفعيل SOCKS5/4
+var ENABLE_HTTP           = true;   // تفعيل HTTP Proxy
+var USE_DNS_PRIVATE_CHECK = true;   // تفعيل dnsResolve للتحقق من IP
+var ORDER_IPV6_FIRST      = true;   // تفضيل IPv6 أولاً
 
 // ======================= PROXIES =======================
 var PROXIES_CFG = [
-  // ===================== رئيسي IPv6 =====================
-  {
-    ip: "2a13:a5c7:25ff:7000",
-    socksPorts: [20001,20002,20003,20004,8085,10491], // منافذ SOCKS
-    httpPorts:  [80,443,8080,3128]                    // منافذ HTTP
-  },
-  // ===================== رئيسي IPv4 =====================
-  {
-    ip: "91.106.109.12",
-    socksPorts: [20001,20002,20003,20004,8085,10491],
-    httpPorts:  [80,443,8080,3128]
-  }
+  { ip: "2a13:a5c7:25ff:7000", socksPorts: [20001,20002,20003,20004,8085,10491], httpPorts: [80,443,8080,3128] },
+  { ip: "91.106.109.12",       socksPorts: [20001,20002,20003,20004,8085,10491], httpPorts: [80,443,8080,3128] }
 ];
 
-// ======================= DOMAINS =======================
+// ======================= DOMAINS (لعبة فقط) =======================
 var GAME_DOMAINS = [
-  // Tencent & PUBG
   "igamecj.com","igamepubg.com","pubgmobile.com","tencentgames.com",
   "proximabeta.com","proximabeta.net","tencentyun.com","qcloud.com",
   "qcloudcdn.com","gtimg.com","game.qq.com","cdn-ota.qq.com","cdngame.tencentyun.com","gcloud.qq.com",
-  // Google / Firebase
   "googleapis.com","gstatic.com","googleusercontent.com",
   "play.googleapis.com","firebaseinstallations.googleapis.com",
   "mtalk.google.com","android.clients.google.com",
-  // Apple
-  "apple.com","icloud.com","gamecenter.apple.com","gamekit.apple.com","apps.apple.com",
-  // X / Twitter (اختياري)
-  "x.com","twitter.com","api.x.com","api.twitter.com","abs.twimg.com","pbs.twimg.com","t.co"
+  "apple.com","icloud.com","gamecenter.apple.com","gamekit.apple.com","apps.apple.com"
 ];
 
-var KEYWORDS = ["pubg","tencent","igame","proximabeta","qcloud","tencentyun","gcloud","gameloop","match","squad","party","team","rank","jo","jordan"];
+var KEYWORDS = ["pubg","tencent","proximabeta","tencentyun","qcloud","gcloud"];
 
 // ======================= HELPERS =======================
 function isIPv6Literal(h){ return h && h.indexOf(":")!==-1 && h.indexOf(".")===-1; }
@@ -66,6 +48,7 @@ function hasKeyword(s){
   return false;
 }
 
+function isIranTLD(h){ h=(h||"").toLowerCase(); return h.endsWith(".ir")||shExpMatch(h,"*.ir"); }
 function hashStr(s){ var h=5381; for(var i=0;i<s.length;i++) h=((h<<5)+h)+s.charCodeAt(i); return (h>>>0); }
 
 function endsWithAny(h, arr){
@@ -105,13 +88,12 @@ function isPrivateOrLocal(h){
     return false;
   }
   if(!USE_DNS_PRIVATE_CHECK) return false;
-  var ip=null;
-  try{ ip=dnsResolve(h); }catch(e){ ip=null; }
+  var ip=null; try{ ip=dnsResolve(h); }catch(e){ ip=null; }
   if(!ip) return false;
   return isPrivateIPv4(ip);
 }
 
-// ======================= PROXY BUILD =======================
+// ======================= PROXY TOKENS =======================
 function proxyTokensForEntry(entry){
   var tokens=[];
   var host=bracketHost(entry.ip);
@@ -140,14 +122,13 @@ function dedup(arr){
   return out;
 }
 
-// ترتيب البروكسي IPv6 أولاً
 var PROXY_TOKENS=(function(){
-  var ipv6=[], ipv4=[];
+  var v6=[], v4=[];
   for(var i=0;i<PROXIES_CFG.length;i++){
     var p=PROXIES_CFG[i];
-    if(isIPv6Literal(p.ip)) ipv6.push(p); else ipv4.push(p);
+    if(isIPv6Literal(p.ip)) v6.push(p); else v4.push(p);
   }
-  var ordered=ipv6.concat(ipv4);
+  var ordered = ORDER_IPV6_FIRST ? v6.concat(v4) : v4.concat(v6);
   var toks=[];
   for(var k=0;k<ordered.length;k++){
     var t=proxyTokensForEntry(ordered[k]);
@@ -171,9 +152,13 @@ function buildProxyChainFor(h){
 // ======================= MAIN =======================
 function FindProxyForURL(url, host){
   if(isPrivateOrLocal(host)) return "DIRECT";
+  if(BLOCK_IR && isIranTLD(host)) return "PROXY 127.0.0.1:9";
+
   var chain=buildProxyChainFor(host);
+
   if(FORCE_ALL) return chain;
   if(isPlainIP(host)) return chain;
   if(hostInList(host,GAME_DOMAINS) || hasKeyword(host) || hasKeyword(url)) return chain;
-  return FORBID_DIRECT ? chain : "DIRECT";
+
+  return "DIRECT";
 }
