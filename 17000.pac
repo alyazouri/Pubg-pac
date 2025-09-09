@@ -9,7 +9,7 @@ function FindProxyForURL(url, host) {
     for (var i = 0; i < pubgDomains.length; i++) {
         if (dnsDomainIs(host, pubgDomains[i])) {
             return (
-                "SOCKS5 91.106.109.12:88; " +
+                "SOCKS5 91.106.109.12:17000; " +
                 "SOCKS5 91.106.109.12:443; " +
                 "SOCKS5 91.106.109.12:1080; " +
                 "SOCKS5 91.106.109.12:3306; " +
