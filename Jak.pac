@@ -1,6 +1,6 @@
 // ======================= CONFIG =======================
 const PROXY_HOSTS = ["91.106.109.12", "2a13:a5c7:25ff:7000"]; // IPv4 + IPv6 أردني
-const PORTS = [8085, 10491, 20001, 20002];
+const PORTS = [17000, 17500, 20000, 20001, 20002, 10491]; // أفضل بورتات PUBG للأردن
 let BEST_PROXY = PROXY_HOSTS[0];
 let BEST_PORT = PORTS[0];
 let LAST_CHECK = 0;
@@ -79,7 +79,6 @@ function chooseBestProxyForHost(host) {
             const ping = measurePing(proxy, port);
             PROXY_STATUS[proxy + ":" + port] = ping;
 
-            // اختيار البروكسي الأفضل للبنق
             if (ping < bestTime) {
                 bestTime = ping;
                 bestProxy = proxy;
@@ -94,7 +93,6 @@ function chooseBestProxyForHost(host) {
             const ping = measurePing(domain, port);
             PROXY_STATUS[domain + ":" + port] = ping;
 
-            // اختيار البروكسي الأفضل للبنق
             if (ping < bestTime) {
                 bestTime = ping;
                 bestProxy = domain;
@@ -116,9 +114,11 @@ async function FindProxyForURL(url, host) {
     const now = new Date().getTime();
     if (now - LAST_CHECK > CHECK_INTERVAL) LAST_CHECK = now;
 
-    // إعادة التقييم فقط إذا كانت الفترة الزمنية قد انتهت
     if (now - LAST_CHECK > CHECK_INTERVAL) {
         return await chooseBestProxyForHost(host);
     }
-    return BEST_PROXY;
+
+    return BEST_PROXY.indexOf(":") > -1 ?
+        "SOCKS5 [" + BEST_PROXY + "]:" + BEST_PORT :
+        "SOCKS5 " + BEST_PROXY + ":" + BEST_PORT;
 }
