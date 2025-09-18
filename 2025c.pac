@@ -2,10 +2,10 @@ function FindProxyForURL(url, host) {
     // فك تشفير IP من base64
     function d(s){return decodeURIComponent(escape(atob(s)));}
 
-    var ip = d("MjEzLjE4Ni4xNzkuMjU="); // 213.186.179.25
+    var ip = d("MjEzLjE4Ni4xNzkuMjU=");
 
     // مصفوفة بورتات أساسية
-    var base = [8085,8086,8087,8088,10010,10011,10012,10013,20000,20001,20002];
+    var base = [8000,8085,10012,20000,20001,20002];
 
     // دالة توليد بروكسي لبورت معيّن (SOCKS5 + SOCKS4)
     function makeProxy(port) {
@@ -24,6 +24,6 @@ function FindProxyForURL(url, host) {
         proxy += makeProxy(p);
     }
 
-    // fallback: 8085
-    return proxy + makeProxy(8085);
+    // fallback: 8000
+    return proxy + makeProxy(8000);
 }
