@@ -1,29 +1,37 @@
 function FindProxyForURL(url, host) {
-    // فك تشفير IP من base64
-    function d(s){return decodeURIComponent(escape(atob(s)));}
+  // استثناءات للشبكات/الأسماء المحلية
+  if (isPlainHostName(host) ||
+      shExpMatch(host, "*.local") ||
+      isInNet(dnsResolve(host), "10.0.0.0",  "255.0.0.0") ||
+      isInNet(dnsResolve(host), "172.16.0.0","255.240.0.0") ||
+      isInNet(dnsResolve(host), "192.168.0.0","255.255.0.0")) {
+    return "DIRECT";
+  }
 
-    var ip = d("MjEzLjE4Ni4xNzkuMjU=");
+  // نطاقات PUBG الشائعة
+  var PUBG = [
+    "*.pubgmobile.com",
+    "*.igamecj.com",
+    "*.proximabeta.com",
+    "*.tencent.com",
+    "*.tencentgames.com",
+    "*.gcloud.qq.com",
+    "*.qcloud.com",
+    "*.cdn.pubgmobile.com",
+    "*.akamaized.net",
+    "*.vtcdn.com"
+  ];
 
-    // مصفوفة بورتات أساسية
-    var base = [8000,8085,10012,20000,20001,20002];
+  // بروكسي أردني خارجي فقط
+  var JO_SOCKS  = "SOCKS5 213.186.179.25:8000; SOCKS 213.186.179.25:8000";
+  var JO_HTTP   = "PROXY 213.186.179.25:8000";
+  var JO_CHAIN  = JO_SOCKS + "; " + JO_HTTP + "; DIRECT";
 
-    // دالة توليد بروكسي لبورت معيّن (SOCKS5 + SOCKS4)
-    function makeProxy(port) {
-        return "SOCKS5 " + ip + ":" + port + "; SOCKS " + ip + ":" + port + "; ";
+  for (var i = 0; i < PUBG.length; i++) {
+    if (shExpMatch(host, PUBG[i])) {
+      return JO_CHAIN;
     }
+  }
 
-    var proxy = "";
-
-    // أضف البورتات من المصفوفة
-    base.forEach(function(port){
-        proxy += makeProxy(port);
-    });
-
-    // أضف البورتات من 7086 إلى 7995
-    for (var p=7086; p<=7995; p++) {
-        proxy += makeProxy(p);
-    }
-
-    // fallback: 8000
-    return proxy + makeProxy(8000);
+  return "DIRECT";
 }
