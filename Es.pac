@@ -1,20 +1,10 @@
-// ==============================================
-// PUBG PAC - Full Jordan Proxy (No Raw DIRECT)
-// ==============================================
-// الفكرة:
-// - كل شيء يمر عبر البروكسي الأردني
-// - ببجي: بورت متغير (Hybrid: تجنيد سريع + استقرار بالمباراة)
-// - باقي الاتصالات: تضل عبر البروكسي نفسه (بورت مناسب)
-// ==============================================
-
-// ---------------- إعدادات ----------------
+// PUBG PAC - Proxy via Jordan (محسن للأداء)
 var proxyIP = "91.106.109.12";
 var minPort = 10000;
 var maxPort = 27015;
-var stickyTTL = 60000; // ثبات البورت 60 ثانية
-// -----------------------------------------
+var stickyTTL = 300000;  // ثبات البورت 5 دقائق بدلاً من 60 ثانية
 
-var hostMap = {}; // خريطة لحفظ البورتات
+var hostMap = {}; // خريطة لحفظ آخر منفذ لكل مضيف PUBG
 
 function generatePort() {
     var nowSec = Math.floor(Date.now() / 1000);
@@ -23,10 +13,8 @@ function generatePort() {
 }
 
 function buildProxyString(port) {
-    // نجرب SOCKS5 ثم SOCKS4 ثم HTTP PROXY
-    return "SOCKS5 " + proxyIP + ":" + port +
-           "; SOCKS4 " + proxyIP + ":" + port +
-           "; PROXY " + proxyIP + ":" + port;
+    // استخدام SOCKS5 فقط لكونه الأفضل للألعاب (يدعم UDP)
+    return "SOCKS5 " + proxyIP + ":" + port;
 }
 
 function isPubgHost(host) {
@@ -39,7 +27,9 @@ function isPubgHost(host) {
     ];
     for (var i = 0; i < pubgList.length; i++) {
         var d = pubgList[i];
-        if (host == d || dnsDomainIs(host, "." + d) || shExpMatch(host, "*." + d)) return true;
+        if (host == d || dnsDomainIs(host, "." + d) || shExpMatch(host, "*." + d)) {
+            return true;
+        }
     }
     if (shExpMatch(host, "*pubg*") || shExpMatch(host, "*tencent*") ||
         shExpMatch(host, "*qcloud*") || shExpMatch(host, "*proximabeta*")) {
@@ -50,20 +40,17 @@ function isPubgHost(host) {
 
 function FindProxyForURL(url, host) {
     host = host.toLowerCase();
-    var now = Date.now();
 
-    // 1) نطاقات ببجي → Hybrid Proxy
+    // 1) نطاقات PUBG → بروكسي أردني بمنفذ ثابت قدر الإمكان
     if (isPubgHost(host)) {
-        var entry = hostMap[host];
-        if (entry && (now - entry.ts) <= stickyTTL) {
-            return buildProxyString(entry.port);
+        if (hostMap[host] && (Date.now() - hostMap[host].ts) < stickyTTL) {
+            return buildProxyString(hostMap[host].port);
         }
         var port = generatePort();
-        hostMap[host] = {port: port, ts: now};
+        hostMap[host] = { port: port, ts: Date.now() };
         return buildProxyString(port);
     }
 
-    // 2) باقي الاتصالات (حتى .jo أو أي موقع ثاني) → البروكسي الأردني برضو
-    var port = generatePort();
-    return buildProxyString(port);
+    // 2) باقي الاتصالات → عبر نفس البروكسي (منفذ متغير لكل اتصال)
+    return buildProxyString(generatePort());
 }
